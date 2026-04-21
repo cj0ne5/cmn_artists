@@ -18,54 +18,124 @@
 
   <form method="POST">
     {% csrf_token %}
-
     {{ form.non_field_errors }}
 
     <div class="form-group">
-      {{ form.title.label_tag }}
+      <div class="field-label-row">
+        {{ form.title.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">The name of the song as it will appear in the streaming platform.</p>
+        </details>
+      </div>
       {{ form.title }}
       {{ form.title.errors }}
     </div>
 
     <div class="form-group">
-      {{ form.track_number.label_tag }}
+      <div class="field-label-row">
+        {{ form.artist.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">The performing artist(s) for this track (ID3: TPE1). If there are multiple artists, include all of them here (e.g. "Artist A feat. Artist B"). Leave blank to use your display name.</p>
+        </details>
+      </div>
+      {{ form.artist }}
+      {{ form.artist.errors }}
+    </div>
+
+    <div class="form-group">
+      <div class="field-label-row">
+        {{ form.album_artist.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">The primary artist credited for the album (ID3: TPE2). Every track in the same album should share the same Album Artist — this is how the streaming platform groups them together. For a compilation, use "Various Artists". Leave blank to use your display name.</p>
+        </details>
+      </div>
+      {{ form.album_artist }}
+      {{ form.album_artist.errors }}
+    </div>
+
+    <div class="form-group">
+      <div class="field-label-row">
+        {{ form.track_number.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">The track's position on the album. Determines playback order in the streaming platform.</p>
+        </details>
+      </div>
       {{ form.track_number }}
       {{ form.track_number.errors }}
     </div>
 
     <div class="form-group">
-      {{ form.genre.label_tag }}
+      <div class="field-label-row">
+        {{ form.disc_number.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">For albums that span multiple discs, enter the disc number this track belongs to (1 for Disc 1, 2 for Disc 2, etc.). Leave blank for single-disc albums.</p>
+        </details>
+      </div>
+      {{ form.disc_number }}
+      {{ form.disc_number.errors }}
+    </div>
+
+    <div class="form-group">
+      <div class="field-label-row">
+        {{ form.genre.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">The genre of the track (e.g. Jazz, Go-Go, R&amp;B, Hip-Hop). Used for browsing and filtering in the streaming platform. Can be a comma-separated list for multiple genres.</p>
+        </details>
+      </div>
       {{ form.genre }}
       {{ form.genre.errors }}
     </div>
 
     <div class="form-group">
-      {{ form.composer.label_tag }}
+      <div class="field-label-row">
+        {{ form.composer.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">The person(s) who wrote the music — not the performer. Used for publishing rights and metadata accuracy.</p>
+        </details>
+      </div>
       {{ form.composer }}
       {{ form.composer.errors }}
     </div>
 
     <div class="form-group">
-      {{ form.lyricist.label_tag }}
-      {{ form.lyricist }}
-      {{ form.lyricist.errors }}
-    </div>
-
-    <div class="form-group">
-      {{ form.isrc.label_tag }}
+      <div class="field-label-row">
+        {{ form.isrc.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">International Standard Recording Code — a unique identifier for this specific recording, formatted as CC-XXX-YY-NNNNN (e.g. US-S1Z-99-00001). Optional, but useful for rights tracking and royalty reporting.</p>
+        </details>
+      </div>
       {{ form.isrc }}
-      <p class="helptext">{{ form.isrc.help_text }}</p>
       {{ form.isrc.errors }}
     </div>
 
     <div class="form-group">
-      {{ form.bpm.label_tag }}
+      <div class="field-label-row">
+        {{ form.bpm.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">Beats per minute — the tempo of the track. Optional.</p>
+        </details>
+      </div>
       {{ form.bpm }}
       {{ form.bpm.errors }}
     </div>
 
     <div class="form-group">
-      {{ form.comment.label_tag }}
+      <div class="field-label-row">
+        {{ form.comment.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">Any notes about this track. Stored in the file tags and visible in most media players.</p>
+        </details>
+      </div>
       {{ form.comment }}
       {{ form.comment.errors }}
     </div>

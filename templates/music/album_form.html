@@ -44,6 +44,18 @@
     </div>
 
     <div class="form-group">
+      <div class="field-label-row">
+        {{ form.compilation.label_tag }}
+        <details class="field-help">
+          <summary>?</summary>
+          <p class="help-body">Check this for various-artists or compilation albums. The streaming platform will group tracks by individual artists, and the compilation flag will be written into all file tags.</p>
+        </details>
+      </div>
+      {{ form.compilation }}
+      {{ form.compilation.errors }}
+    </div>
+
+    <div class="form-group">
       {{ form.description.label_tag }}
       {{ form.description }}
       {{ form.description.errors }}

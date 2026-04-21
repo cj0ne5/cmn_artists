@@ -88,8 +88,19 @@ class AlbumUpdateView(LoginRequiredMixin, UpdateView):
         return album
 
     def form_valid(self, form):
-        messages.success(self.request, f'Album "{form.instance.title}" updated successfully.')
-        return super().form_valid(form)
+        cover_changed = 'cover_art' in form.changed_data
+        response = super().form_valid(form)
+        if cover_changed and self.object.cover_art:
+            # Re-embed the new cover into all existing track files
+            from .utils import write_audio_metadata
+            for track in self.object.tracks.all():
+                if track.audio_file:
+                    try:
+                        write_audio_metadata(track.audio_file.path, track)
+                    except Exception:
+                        pass
+        messages.success(self.request, f'Album "{self.object.title}" updated.')
+        return response
 
     def form_invalid(self, form):
         messages.error(self.request, 'Please correct the errors below.')

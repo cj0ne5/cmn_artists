@@ -5,12 +5,21 @@ from django.utils.text import slugify
 
 
 def album_cover_path(instance, filename):
-    """Upload path: media/music/{artist_slug}/covers/{filename}"""
+    """
+    Save cover art as cover.jpg (or cover.png) directly inside the album's
+    audio folder so Navidrome picks it up as a folder image.
+    upload_to is called before Album.save(), so slug may not be set yet —
+    we fall back to slugifying the title.
+    """
     try:
         artist_slug = instance.artist.artist_profile.slug or slugify(instance.artist.email)
     except Exception:
-        artist_slug = f'user-{instance.artist.pk}'
-    return f'music/{artist_slug}/covers/{filename}'
+        artist_slug = f'user-{instance.artist_id}'
+    album_slug = instance.slug or slugify(instance.title) or f'album-{instance.pk or "new"}'
+    from pathlib import Path as _Path
+    ext = _Path(filename).suffix.lower()
+    cover_name = 'cover.png' if ext == '.png' else 'cover.jpg'
+    return f'music/{artist_slug}/{album_slug}/{cover_name}'
 
 
 def track_upload_path(instance, filename):
@@ -31,6 +40,7 @@ class Album(models.Model):
     cover_art = models.ImageField(upload_to=album_cover_path, blank=True, null=True)
     genre = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
+    compilation = models.BooleanField(default=False, help_text='Mark as a various-artists compilation album.')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -66,9 +76,11 @@ class Track(models.Model):
     duration_seconds = models.FloatField(blank=True, null=True, help_text='Populated automatically from audio file')
 
     # Editable metadata — synced to file tags on save
+    artist = models.CharField(max_length=300, blank=True, help_text='Performing artist(s). Defaults to your display name if blank.')
+    album_artist = models.CharField(max_length=300, blank=True, help_text='Primary artist credited for the album (TPE2). Should be the same across all tracks on an album.')
+    disc_number = models.PositiveIntegerField(blank=True, null=True, help_text='Disc number for multi-disc albums. Leave blank for single-disc albums.')
     genre = models.CharField(max_length=100, blank=True)
     composer = models.CharField(max_length=300, blank=True)
-    lyricist = models.CharField(max_length=300, blank=True)
     isrc = models.CharField(
         max_length=20,
         blank=True,
@@ -109,27 +121,18 @@ class Track(models.Model):
                 try:
                     meta = read_audio_metadata(filepath)
                     changed = False
-                    if meta.get('duration_seconds') and not self.duration_seconds:
-                        self.duration_seconds = meta['duration_seconds']
-                        changed = True
-                    if meta.get('genre') and not self.genre:
-                        self.genre = meta['genre']
-                        changed = True
-                    if meta.get('composer') and not self.composer:
-                        self.composer = meta['composer']
-                        changed = True
-                    if meta.get('isrc') and not self.isrc:
-                        self.isrc = meta['isrc']
-                        changed = True
-                    if meta.get('bpm') and not self.bpm:
-                        self.bpm = meta['bpm']
-                        changed = True
-                    if meta.get('comment') and not self.comment:
-                        self.comment = meta['comment']
-                        changed = True
+                    for field in ('duration_seconds', 'artist', 'album_artist',
+                                  'genre', 'composer', 'isrc', 'bpm', 'comment',
+                                  'disc_number'):
+                        if meta.get(field) and not getattr(self, field):
+                            setattr(self, field, meta[field])
+                            changed = True
                     if changed:
                         Track.objects.filter(pk=self.pk).update(
                             duration_seconds=self.duration_seconds,
+                            artist=self.artist,
+                            album_artist=self.album_artist,
+                            disc_number=self.disc_number,
                             genre=self.genre,
                             composer=self.composer,
                             isrc=self.isrc,
