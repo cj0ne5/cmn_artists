@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load allauth account %}
+
+{% block title %}Confirm email — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  {% if confirmation %}
+    <h1>confirm your email</h1>
+    <p>Please confirm that <strong>{{ confirmation.email_address.email }}</strong> is your email address.</p>
+    <form method="POST" action="{% url 'account_confirm_email' confirmation.key %}">
+      {% csrf_token %}
+      <button type="submit">confirm</button>
+    </form>
+  {% else %}
+    <h1>link expired</h1>
+    <p class="muted">This confirmation link is invalid or has already been used.</p>
+    <p><a href="{% url 'account_email' %}">manage email addresses</a></p>
+  {% endif %}
+
+  <p class="muted" style="margin-top: 2rem;"><a href="{% url 'home' %}">back to home</a></p>
+</div>
+{% endblock %}

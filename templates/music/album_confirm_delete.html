@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Delete album — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <p class="muted"><a href="{% url 'album-list' %}">albums</a> › <a href="{% url 'album-detail' album.pk %}">{{ album.title }}</a> › delete</p>
+
+  <h1>delete album?</h1>
+
+  <p>You are about to permanently delete <strong>{{ album.title }}</strong> and all {{ album.tracks.count }} track{{ album.tracks.count|pluralize }} in it. The audio files will be removed. This cannot be undone.</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <div style="display: flex; gap: 1rem; align-items: baseline;">
+      <button type="submit" class="danger">delete</button>
+      <a href="{% url 'album-detail' album.pk %}">cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

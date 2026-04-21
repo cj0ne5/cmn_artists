@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title|default:"Album" }} — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <p class="muted"><a href="{% url 'album-list' %}">albums</a> › {{ page_title|default:"album" }}</p>
+
+  <h1>{{ page_title|default:"album" }}</h1>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    <div class="form-group">
+      {{ form.title.label_tag }}
+      {{ form.title }}
+      {{ form.title.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.release_year.label_tag }}
+      {{ form.release_year }}
+      {{ form.release_year.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.genre.label_tag }}
+      {{ form.genre }}
+      {{ form.genre.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.cover_art.label_tag }}
+      {% if object and object.cover_art %}
+        <img src="{{ object.cover_art.url }}" alt="current cover"
+             style="width: 60px; height: 60px; object-fit: cover; display: block; margin-bottom: 0.25rem;">
+        <p class="helptext">current cover — upload a new file to replace it</p>
+      {% endif %}
+      {{ form.cover_art }}
+      <p class="helptext">Square image, at least 500×500px.</p>
+      {{ form.cover_art.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.description.label_tag }}
+      {{ form.description }}
+      {{ form.description.errors }}
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: baseline; margin-top: 1.5rem;">
+      <button type="submit">save</button>
+      <a href="{% url 'album-list' %}">cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

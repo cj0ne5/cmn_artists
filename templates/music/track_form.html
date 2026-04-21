@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title|default:"Track" }} — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  {% if album %}
+    <p class="muted">
+      <a href="{% url 'album-list' %}">albums</a> ›
+      <a href="{% url 'album-detail' album.pk %}">{{ album.title }}</a> ›
+      {{ page_title|default:"track" }}
+    </p>
+  {% endif %}
+
+  <h1>{{ page_title|default:"track" }}</h1>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    <div class="form-group">
+      {{ form.title.label_tag }}
+      {{ form.title }}
+      {{ form.title.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.track_number.label_tag }}
+      {{ form.track_number }}
+      {{ form.track_number.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.audio_file.label_tag }}
+      {{ form.audio_file }}
+      <p class="helptext">MP3, FLAC, M4A, OGG. Metadata can be edited after upload.</p>
+      {{ form.audio_file.errors }}
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: baseline; margin-top: 1.5rem;">
+      <button type="submit">{% if action == 'Upload' %}upload{% else %}save{% endif %}</button>
+      {% if album %}
+        <a href="{% url 'album-detail' album.pk %}">cancel</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}

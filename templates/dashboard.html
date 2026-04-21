@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  {% with profile=request.user.artist_profile %}
+    <h1>{% if profile %}{{ profile.display_name }}{% else %}dashboard{% endif %}</h1>
+  {% endwith %}
+
+  <p class="muted">
+    {{ albums|length }} album{{ albums|length|pluralize }}
+    &middot;
+    {{ total_tracks }} track{{ total_tracks|pluralize }}
+  </p>
+
+  <hr>
+
+  <p>
+    <a href="{% url 'album-list' %}">my albums</a>
+    &nbsp;&middot;&nbsp;
+    <a href="{% url 'album-create' %}">add album</a>
+    &nbsp;&middot;&nbsp;
+    <a href="{% url 'profile-edit' %}">edit profile</a>
+  </p>
+
+  {% if albums %}
+    <hr>
+    {% for album in albums %}
+      <div style="margin-bottom: 1rem;">
+        <a href="{% url 'album-detail' album.pk %}">{{ album.title }}</a>
+        <span class="muted">
+          &nbsp;— {{ album.track_count }} track{{ album.track_count|pluralize }}
+          {% if album.release_year %}&nbsp;&middot;&nbsp;{{ album.release_year }}{% endif %}
+        </span>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

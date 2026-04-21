@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>{% if profile %}{{ profile.display_name }}{% else %}profile{% endif %}</h1>
+  <p class="muted">{{ request.user.email }}</p>
+
+  {% if profile and profile.photo %}
+    <img src="{{ profile.photo.url }}" alt="photo"
+         style="width: 80px; height: 80px; object-fit: cover; display: block; margin-bottom: 1rem;">
+  {% endif %}
+
+  {% if profile and profile.bio %}
+    <p>{{ profile.bio }}</p>
+  {% endif %}
+
+  <p class="muted"><a href="{% url 'profile-edit' %}">edit profile</a></p>
+
+  <hr>
+
+  <div style="display: flex; justify-content: space-between; align-items: baseline;">
+    <h2>albums</h2>
+    <a href="{% url 'album-create' %}" class="muted">+ add album</a>
+  </div>
+
+  {% if albums %}
+    {% for album in albums %}
+      <div style="margin-bottom: 1rem;">
+        <a href="{% url 'album-detail' album.pk %}">{{ album.title }}</a>
+        <span class="muted">
+          &nbsp;— {{ album.tracks.count }} track{{ album.tracks.count|pluralize }}
+          {% if album.release_year %}&nbsp;&middot;&nbsp;{{ album.release_year }}{% endif %}
+        </span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">No albums yet. <a href="{% url 'album-create' %}">Add your first.</a></p>
+  {% endif %}
+</div>
+{% endblock %}

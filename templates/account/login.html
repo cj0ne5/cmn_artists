@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load allauth account %}
+
+{% block title %}Log in — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>log in</h1>
+
+  <form method="POST" action="{% url 'account_login' %}">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    <div class="form-group">
+      <label for="{{ form.login.id_for_label }}">email</label>
+      <input type="email"
+             id="{{ form.login.id_for_label }}"
+             name="{{ form.login.html_name }}"
+             value="{{ form.login.value|default:'' }}"
+             autocomplete="email"
+             required>
+      {{ form.login.errors }}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.password.id_for_label }}">password</label>
+      <input type="password"
+             id="{{ form.password.id_for_label }}"
+             name="{{ form.password.html_name }}"
+             autocomplete="current-password"
+             required>
+      {{ form.password.errors }}
+    </div>
+
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+    {% endif %}
+
+    <button type="submit">log in</button>
+  </form>
+
+  <p class="muted" style="margin-top: 1.5rem;">
+    <a href="{% url 'account_reset_password' %}">forgot password?</a>
+    &nbsp;&middot;&nbsp;
+    <a href="{% url 'invite-request' %}">request an invite</a>
+  </p>
+</div>
+{% endblock %}

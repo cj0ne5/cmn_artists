@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Check your email — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>check your email</h1>
+  <p>We sent a verification link to your email address. Click it to activate your account.</p>
+  <p class="muted"><a href="{% url 'home' %}">back to home</a></p>
+</div>
+{% endblock %}

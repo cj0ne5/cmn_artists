@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ album.title }} — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <p class="muted"><a href="{% url 'album-list' %}">albums</a> › {{ album.title }}</p>
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+      <h1 style="margin-bottom: 0.25rem;">{{ album.title }}</h1>
+      <p class="muted">
+        {% if album.release_year %}{{ album.release_year }}{% endif %}
+        {% if album.release_year and album.genre %}&nbsp;&middot;&nbsp;{% endif %}
+        {% if album.genre %}{{ album.genre }}{% endif %}
+        &nbsp;&middot;&nbsp;{{ tracks|length }} track{{ tracks|length|pluralize }}
+      </p>
+    </div>
+    {% if album.cover_art %}
+      <img src="{{ album.cover_art.url }}" alt="{{ album.title }}"
+           style="width: 80px; height: 80px; object-fit: cover; flex-shrink: 0; margin-left: 1rem;">
+    {% endif %}
+  </div>
+
+  {% if album.description %}
+    <p>{{ album.description }}</p>
+  {% endif %}
+
+  <p class="muted">
+    <a href="{% url 'track-create' album.pk %}">+ add track</a>
+    &nbsp;&middot;&nbsp;
+    <a href="{% url 'album-update' album.pk %}">edit album</a>
+    &nbsp;&middot;&nbsp;
+    <a href="{% url 'album-delete' album.pk %}" style="color: #8b1a1a;">delete</a>
+  </p>
+
+  <hr>
+
+  {% if tracks %}
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 2rem;">#</th>
+          <th>title</th>
+          <th>duration</th>
+          <th style="text-align: right;">actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for track in tracks %}
+          <tr>
+            <td class="muted">{{ track.track_number }}</td>
+            <td>
+              {{ track.title }}
+              {% if track.composer %}<br><span class="muted">{{ track.composer }}</span>{% endif %}
+            </td>
+            <td class="muted">{{ track.duration_display }}</td>
+            <td style="text-align: right; white-space: nowrap;" class="muted">
+              <a href="{% url 'track-metadata' track.pk %}">metadata</a>
+              &nbsp;&middot;&nbsp;
+              <a href="{% url 'track-update' track.pk %}">edit</a>
+              &nbsp;&middot;&nbsp;
+              <a href="{% url 'track-delete' track.pk %}" style="color: #8b1a1a;">delete</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No tracks yet. <a href="{% url 'track-create' album.pk %}">Upload the first one.</a></p>
+  {% endif %}
+</div>
+{% endblock %}

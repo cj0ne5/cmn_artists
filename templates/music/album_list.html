@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}My Albums — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <div style="display: flex; justify-content: space-between; align-items: baseline;">
+    <h1>albums</h1>
+    <a href="{% url 'album-create' %}" class="muted">+ add album</a>
+  </div>
+
+  <hr>
+
+  {% if albums %}
+    {% for album in albums %}
+      <div style="margin-bottom: 1.25rem;">
+        <a href="{% url 'album-detail' album.pk %}">{{ album.title }}</a>
+        <span class="muted">
+          {% if album.release_year %}&nbsp;{{ album.release_year }}{% endif %}
+          &nbsp;&middot;&nbsp;{{ album.tracks.count }} 
+          track{{ album.tracks.count|pluralize }}
+          {% if album.genre %}&nbsp;&middot;&nbsp;{{ album.genre }}{% endif %}
+        </span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">No albums yet. 
+      <a href="{% url 'album-create' %}">
+        Add your first.
+      </a>
+    </p>
+  {% endif %}
+</div>
+{% endblock %}

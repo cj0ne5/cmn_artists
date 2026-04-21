@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Edit profile — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <p class="muted"><a href="{% url 'profile' %}">profile</a> › edit</p>
+
+  <h1>edit profile</h1>
+
+  {% if object and object.photo %}
+    <img src="{{ object.photo.url }}" alt="current photo"
+         style="width: 80px; height: 80px; object-fit: cover; display: block; margin-bottom: 0.5rem;">
+    <p class="muted" style="margin-bottom: 1rem;">current photo</p>
+  {% endif %}
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    <div class="form-group">
+      {{ form.display_name.label_tag }}
+      {{ form.display_name }}
+      {{ form.display_name.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.bio.label_tag }}
+      {{ form.bio }}
+      <p class="helptext">Max 500 characters.</p>
+      {{ form.bio.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.photo.label_tag }}
+      {{ form.photo }}
+      <p class="helptext">Square image works best.</p>
+      {{ form.photo.errors }}
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: baseline; margin-top: 1.5rem;">
+      <button type="submit">save</button>
+      <a href="{% url 'profile' %}">cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

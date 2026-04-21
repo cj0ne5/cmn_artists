@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}A quick guide — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>a quick guide</h1>
+
+  <hr>
+
+  <h3>how it works</h3>
+  <p>The streaming platform reads directly from the same files you upload here. When you upload a track and edit its metadata, those changes are reflected in the streaming app within seconds — there's no separate publishing step.</p>
+
+  <h3>uploading music</h3>
+  <p>Organize your music into albums. Each album can have a cover image, genre, and year. Upload tracks one at a time — MP3, FLAC, M4A, and OGG are all supported.</p>
+
+  <h3>metadata</h3>
+  <p>Metadata is the information embedded in your audio file — title, artist, track number, genre, composer, ISRC, BPM. The streaming platform reads these tags directly from your files, so keeping them accurate matters. After uploading a track, use the "edit metadata" link to review and correct the tags.</p>
+
+  <h3>logging in to the streaming platform</h3>
+  <p>You can log in to the streaming platform with the same email and password. (Link TBD — will be added soon.)</p>
+
+  <hr>
+
+  <form method="POST">
+    {% csrf_token %}
+    <div style="display: flex; gap: 1.5rem; align-items: baseline;">
+      <button type="submit">got it, take me to my dashboard</button>
+      <a href="{% url 'dashboard' %}" class="muted">remind me again later</a>
+    </div>
+  </form>
+
+  <p class="muted" style="margin-top: 2rem;">You can always find this guide again via the ? link in the navigation.</p>
+</div>
+{% endblock %}

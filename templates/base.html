@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Capital Music Network{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+
+  <nav>
+    <a class="brand" href="{% url 'home' %}">Capital Music Network</a>
+    <div class="links">
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}">dashboard</a>
+        <a href="{% url 'album-list' %}">albums</a>
+        <a href="{% url 'profile' %}">profile</a>
+        <a href="{% url 'tutorial' %}">?</a>
+        {% if user.is_staff %}<a href="{% url 'admin-invite-list' %}">invites</a>{% endif %}
+        <a href="{% url 'account_logout' %}">log out</a>
+      {% else %}
+        <a href="{% url 'account_login' %}">log in</a>
+        <a href="{% url 'invite-request' %}">request invite</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <p class="{{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    Capital Music Network &middot; Washington DC
+  </footer>
+
+</body>
+</html>
