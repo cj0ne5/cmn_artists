@@ -13,6 +13,12 @@ ALLOWED_HOSTS = config(
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='',
+    cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]
+)
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -129,8 +135,13 @@ if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_HOST = 'smtp.gmail.com'
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
+    EMAIL_TIMEOUT = 10  # seconds — fail fast rather than hanging a gunicorn worker
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+NAVIDROME_BASE_URL = config('NAVIDROME_BASE_URL', default='')
+NAVIDROME_ADMIN_USER = config('NAVIDROME_ADMIN_USER', default='')
+NAVIDROME_ADMIN_PASS = config('NAVIDROME_ADMIN_PASS', default='')
 
 LOGGING = {
     'version': 1,

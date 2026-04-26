@@ -1,13 +1,21 @@
+import logging
+
+from allauth.account.models import EmailAddress
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone as tz
 from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from .forms import ArtistProfileForm, InviteRequestForm, RegistrationForm
 from .models import ArtistProfile, Invitation, InviteRequest
+from .navidrome import create_navidrome_user
 
 
 class ArtistProfileRequiredMixin(LoginRequiredMixin):
@@ -96,8 +104,6 @@ class AdminInviteApproveView(LoginRequiredMixin, UserPassesTestMixin, View):
         return self.request.user.is_staff
 
     def post(self, request, pk):
-        from django.core.mail import send_mail
-        from django.urls import reverse
         invite_req = get_object_or_404(InviteRequest, pk=pk)
         if invite_req.status != InviteRequest.STATUS_PENDING:
             messages.error(request, 'This request has already been processed.')
@@ -108,20 +114,28 @@ class AdminInviteApproveView(LoginRequiredMixin, UserPassesTestMixin, View):
         register_url = request.build_absolute_uri(
             reverse('register-with-token', kwargs={'token': invitation.token})
         )
-        send_mail(
-            subject='Your invitation to Capital Music Network',
-            message=(
-                f"Hi {invite_req.name},\n\n"
-                f"You've been invited to submit your music to the Capital Music Network.\n\n"
-                f"Complete your registration here:\n{register_url}\n\n"
-                f"This link is unique to you.\n\n"
-                f"— Capital Music Network"
-            ),
-            from_email=None,
-            recipient_list=[invite_req.email],
-            fail_silently=False,
-        )
-        messages.success(request, f'Invitation sent to {invite_req.email}.')
+        try:
+            send_mail(
+                subject='Your invitation to Capital Music Network',
+                message=(
+                    f"Hi {invite_req.name},\n\n"
+                    f"You've been invited to submit your music to the Capital Music Network.\n\n"
+                    f"Complete your registration here:\n{register_url}\n\n"
+                    f"This link is unique to you.\n\n"
+                    f"— Capital Music Network"
+                ),
+                from_email=None,
+                recipient_list=[invite_req.email],
+                fail_silently=False,
+            )
+            messages.success(request, f'Invitation sent to {invite_req.email}.')
+        except Exception as exc:
+            logging.getLogger(__name__).error('Failed to send invite email to %s: %s', invite_req.email, exc)
+            messages.warning(
+                request,
+                f'{invite_req.name} approved, but the invitation email failed to send. '
+                f'Send them this link manually: {register_url}'
+            )
         return redirect('admin-invite-list')
 
 
@@ -154,14 +168,12 @@ class RegisterWithTokenView(View):
         invitation = self.get_invitation(token)
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            from allauth.account.models import EmailAddress
-            from django.contrib.auth import login
-            from django.utils import timezone as tz
             email = invitation.invite_request.email
+            password = form.cleaned_data['password1']
             user = User.objects.create_user(
                 username=email,
                 email=email,
-                password=form.cleaned_data['password1'],
+                password=password,
             )
             EmailAddress.objects.create(user=user, email=email, primary=True, verified=True)
             profile = user.artist_profile
@@ -169,6 +181,22 @@ class RegisterWithTokenView(View):
             profile.save()
             invitation.accepted_at = tz.now()
             invitation.save()
+            navidrome_url = getattr(settings, 'NAVIDROME_BASE_URL', None)
+            if navidrome_url:
+                try:
+                    create_navidrome_user(
+                        base_url=navidrome_url,
+                        admin_user=settings.NAVIDROME_ADMIN_USER,
+                        admin_pass=settings.NAVIDROME_ADMIN_PASS,
+                        username=email,
+                        display_name=profile.display_name,
+                        email=email,
+                        password=password,
+                    )
+                except Exception:
+                    logging.getLogger(__name__).exception(
+                        'Failed to create Navidrome account for %s', email
+                    )
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, f'Welcome, {profile.display_name}.')
             return redirect('tutorial')
