@@ -1,6 +1,5 @@
 import os
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils.text import slugify
 
 
@@ -12,9 +11,9 @@ def album_cover_path(instance, filename):
     we fall back to slugifying the title.
     """
     try:
-        artist_slug = instance.artist.artist_profile.slug or slugify(instance.artist.email)
+        artist_slug = instance.artist.slug or slugify(instance.artist.display_name)
     except Exception:
-        artist_slug = f'user-{instance.artist_id}'
+        artist_slug = f'artist-{instance.artist_id}'
     album_slug = instance.slug or slugify(instance.title) or f'album-{instance.pk or "new"}'
     from pathlib import Path as _Path
     ext = _Path(filename).suffix.lower()
@@ -25,15 +24,19 @@ def album_cover_path(instance, filename):
 def track_upload_path(instance, filename):
     """Upload path: media/music/{artist_slug}/{album_slug}/{filename}"""
     try:
-        artist_slug = instance.album.artist.artist_profile.slug or slugify(instance.album.artist.email)
+        artist_slug = instance.album.artist.slug or slugify(instance.album.artist.display_name)
     except Exception:
-        artist_slug = f'user-{instance.album.artist.pk}'
+        artist_slug = f'artist-{instance.album.artist_id}'
     album_slug = instance.album.slug or slugify(instance.album.title) or f'album-{instance.album.pk}'
     return f'music/{artist_slug}/{album_slug}/{filename}'
 
 
 class Album(models.Model):
-    artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name='albums')
+    artist = models.ForeignKey(
+        'accounts.ArtistProfile',
+        on_delete=models.CASCADE,
+        related_name='albums',
+    )
     title = models.CharField(max_length=300)
     slug = models.SlugField(max_length=300, blank=True)
     release_year = models.PositiveIntegerField(blank=True, null=True)

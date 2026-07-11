@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Subscription — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>your subscription</h1>
+
+  {% if profile.navidrome_access_error %}
+    <div class="alert">
+      <p>Your payment was successful, but we hit a problem setting up your streaming access.</p>
+      <p>Please email <a href="mailto:{{ support_email }}">{{ support_email }}</a> and we'll get it sorted out.</p>
+    </div>
+  {% endif %}
+
+  {% if profile.subscription_status == 'active' %}
+    <p>Status: <strong>active</strong></p>
+    {% if profile.current_period_end %}
+      <p>Renews: <strong>{{ profile.current_period_end|date:"F j, Y" }}</strong></p>
+    {% endif %}
+    <hr>
+    <form method="POST" action="{% url 'subscribe-cancel' %}">
+      {% csrf_token %}
+      <p class="muted">Canceling will keep your access through the end of the current billing period.</p>
+      <button type="submit" class="button button-danger">cancel subscription</button>
+    </form>
+
+  {% elif profile.subscription_status == 'artist' %}
+    <p>You have complimentary access as a Capital Music Network artist.</p>
+
+  {% elif profile.subscription_status == 'past_due' %}
+    <p>Status: <strong>past due</strong></p>
+    <p>There was a problem with your last payment. Please update your payment method via the link below.</p>
+    <form method="POST" action="{% url 'subscribe-checkout' %}">
+      {% csrf_token %}
+      <button type="submit" class="button">update payment</button>
+    </form>
+
+  {% elif profile.subscription_status == 'canceled' %}
+    <p>Status: <strong>canceled</strong></p>
+    {% if profile.current_period_end %}
+      <p>Access expires: <strong>{{ profile.current_period_end|date:"F j, Y" }}</strong></p>
+    {% endif %}
+    <form method="POST" action="{% url 'subscribe-checkout' %}">
+      {% csrf_token %}
+      <button type="submit" class="button">resubscribe</button>
+    </form>
+
+  {% else %}
+    <p>You don't have an active subscription.</p>
+    <form method="POST" action="{% url 'subscribe-checkout' %}">
+      {% csrf_token %}
+      <button type="submit" class="button">subscribe for $40/year</button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

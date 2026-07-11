@@ -27,6 +27,14 @@ h1, h2, h3, h4, h5 {
   padding: 2rem 1rem 4rem;
 }
 
+.page.wide {
+  max-width: 1200px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
 nav {
   border-bottom: 1px solid #ccc;
   padding: 0.75rem 1.5rem;
@@ -71,6 +79,18 @@ footer {
 .messages .error   { color: #8b1a1a; }
 .messages .warning { color: #7a5c00; }
 .messages .info    { color: #555; }
+
+.alert {
+  border: 1px solid #7a5c00;
+  background: #fdf6e3;
+  color: #7a5c00;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.alert p {
+  margin: 0.2rem 0;
+}
 
 label {
   display: block;

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for artist access — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>apply for artist access</h1>
+  <p>Capital Music Network is a musician-owned cooperative in Washington, DC. Tell us about yourself and we'll be in touch.</p>
+
+  <hr>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    <div class="form-group">
+      {{ form.display_name.label_tag }}
+      {{ form.display_name }}
+      {{ form.display_name.errors }}
+    </div>
+
+    <div class="form-group">
+      {{ form.note.label_tag }}
+      {{ form.note }}
+      {{ form.note.errors }}
+    </div>
+
+    <button type="submit">submit application</button>
+  </form>
+</div>
+{% endblock %}

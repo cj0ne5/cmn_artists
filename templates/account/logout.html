@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Log out — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>log out</h1>
+  <p>Are you sure you want to log out?</p>
+
+  <form method="POST" action="{% url 'account_logout' %}">
+    {% csrf_token %}
+    <button type="submit">log out</button>
+  </form>
+
+  <p class="muted" style="margin-top: 1rem;">
+    <a href="{% url 'home' %}">cancel</a>
+  </p>
+</div>
+{% endblock %}

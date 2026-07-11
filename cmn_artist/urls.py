@@ -2,18 +2,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
 
-from accounts.views import (
-    AdminInviteApproveView,
-    AdminInviteDeclineView,
-    AdminInviteListView,
+from artists.views import (
+    AdminApplicationApproveView,
+    AdminApplicationDeclineView,
+    AdminApplicationListView,
     DashboardView,
-    InviteRequestSentView,
-    InviteRequestView,
-    RegisterWithTokenView,
     TutorialView,
 )
+from subscribers.views import AccountSettingsView, StripeWebhookView
 
 
 def home_view(request):
@@ -23,20 +20,19 @@ def home_view(request):
 
 urlpatterns = [
     path('', home_view, name='home'),
-    # Redirect direct signup attempts to the invite request form
-    path('accounts/signup/', RedirectView.as_view(url='/request-invite/', permanent=False)),
     path('accounts/', include('allauth.urls')),
-    path('profile/', include('accounts.urls')),
+    path('profile/', include('artists.urls')),
     path('music/', include('music.urls')),
-    # Invite / registration flow
-    path('request-invite/', InviteRequestView.as_view(), name='invite-request'),
-    path('request-invite/sent/', InviteRequestSentView.as_view(), name='invite-request-sent'),
-    path('admin-panel/invites/', AdminInviteListView.as_view(), name='admin-invite-list'),
-    path('admin-panel/invites/<int:pk>/approve/', AdminInviteApproveView.as_view(), name='admin-invite-approve'),
-    path('admin-panel/invites/<int:pk>/decline/', AdminInviteDeclineView.as_view(), name='admin-invite-decline'),
-    path('register/<uuid:token>/', RegisterWithTokenView.as_view(), name='register-with-token'),
+    path('subscribe/', include('subscribers.urls')),
+    # Artist application flow
+    path('admin-panel/applications/', AdminApplicationListView.as_view(), name='admin-application-list'),
+    path('admin-panel/applications/<int:pk>/approve/', AdminApplicationApproveView.as_view(), name='admin-application-approve'),
+    path('admin-panel/applications/<int:pk>/decline/', AdminApplicationDeclineView.as_view(), name='admin-application-decline'),
     path('tutorial/', TutorialView.as_view(), name='tutorial'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('account/', AccountSettingsView.as_view(), name='account-settings'),
+    # Stripe webhook (must be exempt from CSRF — handled by raw request body verification)
+    path('stripe/webhook/', StripeWebhookView.as_view(), name='stripe-webhook'),
     path('admin/', admin.site.urls),
 ]
 

@@ -1,7 +1,6 @@
 import os
 import logging
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView, FormView
 )
@@ -10,38 +9,39 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.http import Http404
 
+from artists.views import ArtistProfileRequiredMixin
 from .models import Album, Track
 from .forms import AlbumForm, TrackUploadForm, TrackUpdateForm, TrackMetadataForm
 
 logger = logging.getLogger(__name__)
 
 
-class OwnerAlbumMixin(LoginRequiredMixin):
-    """Ensures the album belongs to the logged-in user."""
+class OwnerAlbumMixin(ArtistProfileRequiredMixin):
+    """Ensures the album belongs to the logged-in user's artist profile."""
 
     def get_album(self):
         album = get_object_or_404(Album, pk=self.kwargs.get('pk') or self.kwargs.get('album_pk'))
-        if album.artist != self.request.user:
+        if album.artist != self.request.user.artist_profile:
             raise Http404('Album not found.')
         return album
 
 
-class AlbumListView(LoginRequiredMixin, ListView):
+class AlbumListView(ArtistProfileRequiredMixin, ListView):
     model = Album
     template_name = 'music/album_list.html'
     context_object_name = 'albums'
 
     def get_queryset(self):
-        return Album.objects.filter(artist=self.request.user).prefetch_related('tracks')
+        return Album.objects.filter(artist=self.request.user.artist_profile).prefetch_related('tracks')
 
 
-class AlbumCreateView(LoginRequiredMixin, CreateView):
+class AlbumCreateView(ArtistProfileRequiredMixin, CreateView):
     model = Album
     form_class = AlbumForm
     template_name = 'music/album_form.html'
 
     def form_valid(self, form):
-        form.instance.artist = self.request.user
+        form.instance.artist = self.request.user.artist_profile
         messages.success(self.request, f'Album "{form.instance.title}" created successfully.')
         return super().form_valid(form)
 
@@ -59,14 +59,14 @@ class AlbumCreateView(LoginRequiredMixin, CreateView):
         return context
 
 
-class AlbumDetailView(LoginRequiredMixin, DetailView):
+class AlbumDetailView(ArtistProfileRequiredMixin, DetailView):
     model = Album
     template_name = 'music/album_detail.html'
     context_object_name = 'album'
 
     def get_object(self, queryset=None):
         album = get_object_or_404(Album, pk=self.kwargs['pk'])
-        if album.artist != self.request.user:
+        if album.artist != self.request.user.artist_profile:
             raise Http404('Album not found.')
         return album
 
@@ -76,14 +76,14 @@ class AlbumDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class AlbumUpdateView(LoginRequiredMixin, UpdateView):
+class AlbumUpdateView(ArtistProfileRequiredMixin, UpdateView):
     model = Album
     form_class = AlbumForm
     template_name = 'music/album_form.html'
 
     def get_object(self, queryset=None):
         album = get_object_or_404(Album, pk=self.kwargs['pk'])
-        if album.artist != self.request.user:
+        if album.artist != self.request.user.artist_profile:
             raise Http404('Album not found.')
         return album
 
@@ -116,7 +116,7 @@ class AlbumUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
 
-class AlbumDeleteView(LoginRequiredMixin, DeleteView):
+class AlbumDeleteView(ArtistProfileRequiredMixin, DeleteView):
     model = Album
     template_name = 'music/album_confirm_delete.html'
     success_url = reverse_lazy('album-list')
@@ -124,7 +124,7 @@ class AlbumDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_object(self, queryset=None):
         album = get_object_or_404(Album, pk=self.kwargs['pk'])
-        if album.artist != self.request.user:
+        if album.artist != self.request.user.artist_profile:
             raise Http404('Album not found.')
         return album
 
@@ -155,14 +155,14 @@ class AlbumDeleteView(LoginRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
-class TrackCreateView(LoginRequiredMixin, CreateView):
+class TrackCreateView(ArtistProfileRequiredMixin, CreateView):
     model = Track
     form_class = TrackUploadForm
     template_name = 'music/track_form.html'
 
     def get_album(self):
         album = get_object_or_404(Album, pk=self.kwargs['album_pk'])
-        if album.artist != self.request.user:
+        if album.artist != self.request.user.artist_profile:
             raise Http404('Album not found.')
         return album
 
@@ -187,14 +187,14 @@ class TrackCreateView(LoginRequiredMixin, CreateView):
         return reverse('album-detail', kwargs={'pk': self.object.album.pk})
 
 
-class TrackUpdateView(LoginRequiredMixin, UpdateView):
+class TrackUpdateView(ArtistProfileRequiredMixin, UpdateView):
     model = Track
     form_class = TrackUpdateForm
     template_name = 'music/track_form.html'
 
     def get_object(self, queryset=None):
         track = get_object_or_404(Track, pk=self.kwargs['pk'])
-        if track.album.artist != self.request.user:
+        if track.album.artist != self.request.user.artist_profile:
             raise Http404('Track not found.')
         return track
 
@@ -217,14 +217,14 @@ class TrackUpdateView(LoginRequiredMixin, UpdateView):
         return reverse('album-detail', kwargs={'pk': self.object.album.pk})
 
 
-class TrackMetadataView(LoginRequiredMixin, UpdateView):
+class TrackMetadataView(ArtistProfileRequiredMixin, UpdateView):
     model = Track
     form_class = TrackMetadataForm
     template_name = 'music/track_metadata.html'
 
     def get_object(self, queryset=None):
         track = get_object_or_404(Track, pk=self.kwargs['pk'])
-        if track.album.artist != self.request.user:
+        if track.album.artist != self.request.user.artist_profile:
             raise Http404('Track not found.')
         return track
 
@@ -249,14 +249,14 @@ class TrackMetadataView(LoginRequiredMixin, UpdateView):
         return reverse('album-detail', kwargs={'pk': self.object.album.pk})
 
 
-class TrackDeleteView(LoginRequiredMixin, DeleteView):
+class TrackDeleteView(ArtistProfileRequiredMixin, DeleteView):
     model = Track
     template_name = 'music/track_confirm_delete.html'
     context_object_name = 'track'
 
     def get_object(self, queryset=None):
         track = get_object_or_404(Track, pk=self.kwargs['pk'])
-        if track.album.artist != self.request.user:
+        if track.album.artist != self.request.user.artist_profile:
             raise Http404('Track not found.')
         return track
 
@@ -275,7 +275,6 @@ class TrackDeleteView(LoginRequiredMixin, DeleteView):
                 logger.warning('Could not delete audio file %s: %s', track.audio_file, exc)
 
         messages.success(self.request, f'Track "{track_title}" has been deleted.')
-        # Store album pk before deletion
         self._album_pk = album_pk
         return super().form_valid(form)
 

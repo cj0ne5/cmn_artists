@@ -4,20 +4,27 @@
 
 {% block content %}
 <div class="page">
-  <h1>Submit to the Capital Music Network</h1>
-  <p>Music uploaded here will appear in the CMN streaming service. Use this
-    website to add new music, edit track titles, and update your artist bio.
+  <h1>Join The Capital Music Network</h1>
+  <p>This is where you can create an account on the Capital Music Network, subscribe
+    to the streaming platform, and apply for an artist account.
   </p>
+  <p>You can access the streaming platform here: <a href="https://listen.capitalmusicnetwork.com">Listen</a></p>
+  <p>You can learn more about CMN here: <a href="https://capitalmusicnetwork.com/">capitalmusicnetwork.com</a></p>
 
   <hr>
 
   {% if user.is_authenticated %}
-    <p><a href="{% url 'dashboard' %}">go to dashboard</a></p>
+    <p>You're already logged in as {{ user.email }}! <a href="{% url 'dashboard' %}">go to dashboard</a></p>
+    {% if user.artist_profile and user.artist_profile.is_approved %}
+      <p>You have an account as an artist. <a href="{% url 'album-list' %}">Click here to visit your artist dashboard</a></p>
+    {% elif user.artist_profile %}
+      <p>Your artist application is pending. We'll get back to you soon!</p>
+      {% else %}
+      <p>Are you a DMV-based musician? <a href="{% url 'artist-application' %}">You can apply to be featured on our streaming platform</a></p>
+      {% endif %}
   {% else %}
     <p>
-      <a href="{% url 'invite-request' %}">request an invite</a>
-      &nbsp;&middot;&nbsp;
-      <a href="{% url 'account_login' %}">log in</a>
+      <a href="{% url 'account_signup' %}">Sign Up</a> or <a href="{% url 'account_login' %}">log in</a> 
     </p>
   {% endif %}
 

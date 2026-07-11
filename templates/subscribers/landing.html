@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Listen — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>listen to local music</h1>
+  <p>Capital Music Network is a musician-owned cooperative streaming platform featuring artists from Washington, DC. Subscribe for unlimited access.</p>
+
+  <hr>
+
+  <div class="subscribe-offer">
+    <p class="price"><strong>$40 / year</strong></p>
+    <ul>
+      <li>Unlimited streaming via Navidrome</li>
+      <li>Support DC artists directly</li>
+      <li>Cancel any time</li>
+    </ul>
+    <a href="{% url 'account_signup' %}" class="button">create an account</a>
+    <p class="muted" style="margin-top: 1rem;">Already have an account? <a href="{% url 'account_login' %}">log in</a></p>
+  </div>
+</div>
+{% endblock %}

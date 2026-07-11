@@ -12,6 +12,7 @@ services:
       DBUSER: admin
       DBNAME: postgres
       DBPASS: LocalPasswordOnly
+      DBPORT=5432
       MEDIA_ROOT: /media
       SECRET_KEY: changeme-set-in-production
       EMAIL_HOST_USER: ""
@@ -22,6 +23,13 @@ services:
       NAVIDROME_BASE_URL: "https://listen.capitalmusicnetwork.com"
       NAVIDROME_ADMIN_USER: admin
       NAVIDROME_ADMIN_PASS: your-navidrome-admin-password
+      NAVIDROME_LIBRARY_ID=1
+      NAVIDROME_SAMPLE_LIBRARY_ID=2
+      SUPPORT_EMAIL=support@capitalmusicnetwork.com
+      STRIPE_SECRET_KEY=sk_live_...
+      STRIPE_PUBLISHABLE_KEY=pk_live_...
+      STRIPE_WEBHOOK_SECRET=whsec_...
+      STRIPE_SUBSCRIPTION_PRICE_ID=price_...
     volumes:
       - ./media:/media
     depends_on:

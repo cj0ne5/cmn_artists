@@ -13,15 +13,26 @@
     <a class="brand" href="{% url 'home' %}">Capital Music Network</a>
     <div class="links">
       {% if user.is_authenticated %}
-        <a href="{% url 'dashboard' %}">dashboard</a>
-        <a href="{% url 'album-list' %}">albums</a>
-        <a href="{% url 'profile' %}">profile</a>
-        <a href="{% url 'tutorial' %}">?</a>
-        {% if user.is_staff %}<a href="{% url 'admin-invite-list' %}">invites</a>{% endif %}
+        {% if user.artist_profile.is_approved %}
+          <a href="{% url 'dashboard' %}">dashboard</a>
+          <a href="{% url 'album-list' %}">albums</a>
+          <a href="{% url 'profile' %}">artist profile</a>
+        {% elif user.artist_profile %}
+          <a href="{% url 'profile' %}">artist profile</a>
+        {% elif user.subscriber_profile.subscription_status == 'pending' or user.subscriber_profile.subscription_status == 'canceled' %}
+          <a href="{% url 'subscriber-dashboard' %}">get streaming access</a>
+        {% else %}
+          <a href="{% url 'subscriber-dashboard' %}">subscription</a>
+        {% endif %}
+        <a href="{% url 'account-settings' %}">account</a>
+        {% if user.is_staff %}
+          <a href="{% url 'admin-application-list' %}">applications</a>
+          <a href="{% url 'admin-user-list' %}">accounts</a>
+        {% endif %}
         <a href="{% url 'account_logout' %}">log out</a>
       {% else %}
         <a href="{% url 'account_login' %}">log in</a>
-        <a href="{% url 'invite-request' %}">request invite</a>
+        <a href="{% url 'subscribe-landing' %}">listen</a>
       {% endif %}
     </div>
   </nav>

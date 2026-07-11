@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Account settings — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>account settings</h1>
+
+  <h2>login</h2>
+  <p>Email: <strong>{{ request.user.email }}</strong></p>
+  <p><a href="{% url 'account_change_password' %}">change password</a></p>
+
+  <hr>
+
+  <h2>subscription</h2>
+  {% if profile.subscription_status == 'artist' %}
+    <p>You have complimentary access as a Capital Music Network artist.</p>
+  {% else %}
+    <p>Status: <strong>{{ profile.get_subscription_status_display }}</strong></p>
+  {% endif %}
+  <p><a href="{% url 'subscriber-dashboard' %}">manage subscription</a></p>
+
+  {% if artist_profile.is_approved %}
+    <hr>
+    <h2>artist account</h2>
+    <p>You also have an artist account on Capital Music Network.</p>
+    <p><a href="{% url 'dashboard' %}">artist dashboard</a> &middot; <a href="{% url 'profile' %}">artist profile</a></p>
+  {% elif artist_profile %}
+    <hr>
+    <h2>artist account</h2>
+    <p><a href="{% url 'profile' %}">view your application status</a></p>
+  {% endif %}
+</div>
+{% endblock %}

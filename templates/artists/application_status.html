@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Application status — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>artist application</h1>
+
+  {% if profile.status == 'pending' %}
+    <p>Thanks for submitting your application! We will review and will send you
+      an email once we've made a decision. If you need help in the meantime,
+      you can reach out to <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+  {% elif profile.status == 'declined' %}
+    <p>We weren't able to approve your artist application this time.</p>
+    <p><a href="{% url 'artist-application' %}">apply again</a></p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Subscribed — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>you're subscribed!</h1>
+  <p>Your payment was successful. You now have full access to the Capital Music Network streaming library.</p>
+  <p>Head to your <a href="{% url 'subscriber-dashboard' %}">subscription dashboard</a> to manage your account.</p>
+</div>
+{% endblock %}

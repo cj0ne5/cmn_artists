@@ -1,0 +1,4 @@
+{% load i18n %}
+{% autoescape off %}
+{% blocktrans %}You're Invited! Confirm Your Account{% endblocktrans %}
+{% endautoescape %}

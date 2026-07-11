@@ -29,9 +29,12 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'allauth',
     'allauth.account',
-    'accounts',
+    'artists',
+    'subscribers',
     'music',
+    'django_extensions',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -142,6 +145,17 @@ else:
 NAVIDROME_BASE_URL = config('NAVIDROME_BASE_URL', default='')
 NAVIDROME_ADMIN_USER = config('NAVIDROME_ADMIN_USER', default='')
 NAVIDROME_ADMIN_PASS = config('NAVIDROME_ADMIN_PASS', default='')
+NAVIDROME_LIBRARY_ID = config('NAVIDROME_LIBRARY_ID', default=1, cast=int)
+NAVIDROME_SAMPLE_LIBRARY_ID = config('NAVIDROME_SAMPLE_LIBRARY_ID', default=2, cast=int)
+
+SUPPORT_EMAIL = config('SUPPORT_EMAIL', default='support@capitalmusicnetwork.com')
+
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
+STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY', default='')
+STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
+STRIPE_SUBSCRIPTION_PRICE_ID = config('STRIPE_SUBSCRIPTION_PRICE_ID', default='')
+
+ACCOUNT_ADAPTER = 'subscribers.adapter.NavidromeAccountAdapter'
 
 LOGGING = {
     'version': 1,
