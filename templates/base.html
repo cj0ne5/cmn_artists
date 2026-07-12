@@ -19,6 +19,8 @@
           <a href="{% url 'profile' %}">artist profile</a>
         {% elif user.artist_profile %}
           <a href="{% url 'profile' %}">artist profile</a>
+        {% elif user.is_staff %}
+          {# staff get complimentary access and have no subscription to manage #}
         {% elif user.subscriber_profile.subscription_status == 'pending' or user.subscriber_profile.subscription_status == 'canceled' %}
           <a href="{% url 'subscriber-dashboard' %}">get streaming access</a>
         {% else %}
@@ -28,6 +30,7 @@
         {% if user.is_staff %}
           <a href="{% url 'admin-application-list' %}">applications</a>
           <a href="{% url 'admin-user-list' %}">accounts</a>
+          <a href="{% url 'admin-money' %}">money</a>
         {% endif %}
         <a href="{% url 'account_logout' %}">log out</a>
       {% else %}

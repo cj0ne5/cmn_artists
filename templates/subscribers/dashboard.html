@@ -15,15 +15,23 @@
 
   {% if profile.subscription_status == 'active' %}
     <p>Status: <strong>active</strong></p>
-    {% if profile.current_period_end %}
+    {% if profile.cancel_at_period_end %}
+      {% if profile.current_period_end %}
+        <p>Your subscription is set to cancel and will not renew. Access ends: <strong>{{ profile.current_period_end|date:"F j, Y" }}</strong></p>
+      {% endif %}
+    {% elif profile.current_period_end %}
       <p>Renews: <strong>{{ profile.current_period_end|date:"F j, Y" }}</strong></p>
     {% endif %}
     <hr>
-    <form method="POST" action="{% url 'subscribe-cancel' %}">
-      {% csrf_token %}
-      <p class="muted">Canceling will keep your access through the end of the current billing period.</p>
-      <button type="submit" class="button button-danger">cancel subscription</button>
-    </form>
+    {% if profile.cancel_at_period_end %}
+      <p class="muted">Your subscription will not automatically renew.</p>
+    {% else %}
+      <form method="POST" action="{% url 'subscribe-cancel' %}">
+        {% csrf_token %}
+        <p class="muted">Canceling will keep your access through the end of the current billing period.</p>
+        <button type="submit" class="button button-danger">cancel subscription</button>
+      </form>
+    {% endif %}
 
   {% elif profile.subscription_status == 'artist' %}
     <p>You have complimentary access as a Capital Music Network artist.</p>

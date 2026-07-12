@@ -20,6 +20,34 @@
   {% endif %}
   <p><a href="{% url 'subscriber-dashboard' %}">manage subscription</a></p>
 
+  <hr>
+
+  <h2>artist you support</h2>
+  <p class="muted">90% of your subscription fee goes directly to the artist you designate below.
+    If you leave this blank, the same 90% will be divided equally among all artists on the platform.
+  </p>
+  {% if profile.designated_artist %}
+    <p>Currently supporting: <strong>{{ profile.designated_artist.display_name }}</strong></p>
+  {% endif %}
+  <form method="POST">
+    {% csrf_token %}
+    {{ designated_artist_form.artist_name.errors }}
+    <input type="text"
+           name="{{ designated_artist_form.artist_name.html_name }}"
+           id="{{ designated_artist_form.artist_name.id_for_label }}"
+           value="{{ designated_artist_form.artist_name.value|default:'' }}"
+           list="artist-names"
+           placeholder="search for an artist"
+           class="input"
+           autocomplete="off">
+    <datalist id="artist-names">
+      {% for name in artist_names %}
+        <option value="{{ name }}">
+      {% endfor %}
+    </datalist>
+    <button type="submit" class="button">save</button>
+  </form>
+
   {% if artist_profile.is_approved %}
     <hr>
     <h2>artist account</h2>

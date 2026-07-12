@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Money — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page wide">
+  <h1>money</h1>
+
+  <h2>overview</h2>
+  <p>Active subscriptions: <strong>{{ active_count }}</strong></p>
+  <p>To Capital Music Network: <strong>${{ cmn_total }}</strong> <span class="muted">($4/subscriber/year)</span></p>
+  <p>To artists: <strong>${{ artist_total }}</strong> <span class="muted">($36/subscriber/year)</span></p>
+
+  <hr>
+
+  <h2>artist breakdown</h2>
+  <p class="muted">
+    Each artist earns $3/month per subscriber who designates them.
+    Subscribers who haven't designated an artist have their $3/month split evenly
+    across all {{ artist_count }} approved artist{{ artist_count|pluralize }}{% if orphan_share %} (${{ orphan_share }}/month each){% endif %}.
+  </p>
+  <p>Subscribers supporting no artist: <strong>{{ no_artist_count }}</strong></p>
+
+  <div class="table-scroll">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>artist</th>
+        <th>direct supporters</th>
+        <th>monthly income</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in artist_rows %}
+      <tr>
+        <td>{{ row.artist.display_name }}</td>
+        <td>{{ row.supporter_count }}</td>
+        <td>${{ row.monthly_income }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="muted">No approved artists yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

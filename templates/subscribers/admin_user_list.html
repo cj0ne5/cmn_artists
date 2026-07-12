@@ -29,14 +29,22 @@
         <td>
           {% if profile.user.artist_profile and profile.user.artist_profile.status == 'approved' %}
             {{ profile.user.artist_profile.display_name }}
+            {% if profile.user.is_staff %}<span class="badge badge-blue">admin</span>{% endif %}
+          {% elif profile.user.is_staff %}
+            <span class="badge badge-blue">admin</span>
           {% else %}
             —
           {% endif %}
         </td>
 
         <td>
-          {% if profile.subscription_status == 'active' %}
+          {% if profile.user.is_staff and profile.subscription_status not in 'active,artist' %}
+            <span class="badge badge-blue">admin (free access)</span>
+          {% elif profile.subscription_status == 'active' %}
             <span class="badge badge-green">active</span>
+            {% if profile.cancel_at_period_end %}
+              <br><span class="badge badge-yellow">not renewing</span>
+            {% endif %}
           {% elif profile.subscription_status == 'artist' %}
             <span class="badge badge-blue">artist</span>
           {% elif profile.subscription_status == 'past_due' %}

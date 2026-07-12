@@ -1,10 +1,12 @@
 import logging
+from decimal import Decimal
 
 import stripe
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
+from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone as tz
@@ -13,20 +15,40 @@ from django.views import View
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 
+from artists.models import ArtistProfile
 from artists.navidrome import grant_library_access, revoke_library_access
+from .forms import DesignatedArtistForm
 from .models import SubscriberProfile
 
 logger = logging.getLogger(__name__)
 
 
-class AccountSettingsView(LoginRequiredMixin, TemplateView):
+class AccountSettingsView(LoginRequiredMixin, View):
     template_name = 'subscribers/account_settings.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['profile'] = self.request.user.subscriber_profile
-        context['artist_profile'] = getattr(self.request.user, 'artist_profile', None)
-        return context
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, self._context(request))
+
+    def post(self, request, *args, **kwargs):
+        profile = request.user.subscriber_profile
+        form = DesignatedArtistForm(request.POST, subscriber=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Updated the artist you support.')
+            return redirect('account-settings')
+        messages.error(request, 'Please correct the errors below.')
+        return render(request, self.template_name, self._context(request, form=form))
+
+    def _context(self, request, form=None):
+        profile = request.user.subscriber_profile
+        return {
+            'profile': profile,
+            'artist_profile': getattr(request.user, 'artist_profile', None),
+            'designated_artist_form': form or DesignatedArtistForm(subscriber=profile),
+            'artist_names': ArtistProfile.objects.filter(
+                status=ArtistProfile.STATUS_APPROVED
+            ).order_by('display_name').values_list('display_name', flat=True),
+        }
 
 
 class SubscribeLandingView(TemplateView):
@@ -107,6 +129,8 @@ class SubscribeCancelView(LoginRequiredMixin, View):
                 profile.stripe_subscription_id,
                 cancel_at_period_end=True,
             )
+            profile.cancel_at_period_end = True
+            profile.save(update_fields=['cancel_at_period_end'])
             messages.success(
                 request,
                 'Your subscription has been canceled. '
@@ -143,6 +167,8 @@ class StripeWebhookView(View):
             self._handle_invoice_payment_failed(data)
         elif event_type == 'customer.subscription.deleted':
             self._handle_subscription_deleted(data)
+        elif event_type == 'customer.subscription.updated':
+            self._handle_subscription_updated(data)
 
         return HttpResponse(status=200)
 
@@ -169,9 +195,12 @@ class StripeWebhookView(View):
             profile.current_period_end = tz.datetime.fromtimestamp(
                 subscription['current_period_end'], tz=tz.utc
             )
+            profile.cancel_at_period_end = subscription.get('cancel_at_period_end', False)
 
         profile.subscription_status = SubscriberProfile.STATUS_ACTIVE
-        profile.save(update_fields=['stripe_subscription_id', 'subscription_status', 'current_period_end'])
+        profile.save(update_fields=[
+            'stripe_subscription_id', 'subscription_status', 'current_period_end', 'cancel_at_period_end',
+        ])
 
         self._grant_access(profile)
 
@@ -215,8 +244,23 @@ class StripeWebhookView(View):
             return
 
         profile.subscription_status = SubscriberProfile.STATUS_CANCELED
-        profile.save(update_fields=['subscription_status'])
+        profile.cancel_at_period_end = False
+        profile.save(update_fields=['subscription_status', 'cancel_at_period_end'])
         self._revoke_access(profile)
+
+    def _handle_subscription_updated(self, subscription):
+        try:
+            profile = SubscriberProfile.objects.get(
+                stripe_subscription_id=subscription.get('id', '')
+            )
+        except SubscriberProfile.DoesNotExist:
+            return
+
+        profile.cancel_at_period_end = subscription.get('cancel_at_period_end', False)
+        period_end = subscription.get('current_period_end')
+        if period_end:
+            profile.current_period_end = tz.datetime.fromtimestamp(period_end, tz=tz.utc)
+        profile.save(update_fields=['cancel_at_period_end', 'current_period_end'])
 
     def _grant_access(self, profile):
         navidrome_url = getattr(settings, 'NAVIDROME_BASE_URL', '')
@@ -277,6 +321,52 @@ class AdminUserListView(StaffRequiredMixin, View):
             .order_by('user__email')
         )
         return render(request, self.template_name, {'profiles': profiles})
+
+
+class AdminMoneyView(StaffRequiredMixin, View):
+    template_name = 'subscribers/admin_money.html'
+
+    CMN_PER_SUBSCRIBER_YEAR = Decimal('4.00')
+    ARTIST_PER_SUBSCRIBER_YEAR = Decimal('36.00')
+    MONTHLY_PER_SUPPORTER = Decimal('3.00')
+
+    def get(self, request):
+        active_subscribers = SubscriberProfile.objects.filter(subscription_status=SubscriberProfile.STATUS_ACTIVE)
+        active_count = active_subscribers.count()
+        no_artist_count = active_subscribers.filter(designated_artist__isnull=True).count()
+
+        artists = ArtistProfile.objects.filter(status=ArtistProfile.STATUS_APPROVED).annotate(
+            direct_supporter_count=Count(
+                'supporters',
+                filter=Q(supporters__subscription_status=SubscriberProfile.STATUS_ACTIVE),
+            )
+        ).order_by('-direct_supporter_count', 'display_name')
+
+        artist_count = artists.count()
+        orphan_share = (
+            (Decimal(no_artist_count) * self.MONTHLY_PER_SUPPORTER / artist_count)
+            if artist_count else Decimal('0.00')
+        )
+
+        artist_rows = [
+            {
+                'artist': artist,
+                'supporter_count': artist.direct_supporter_count,
+                'monthly_income': (Decimal(artist.direct_supporter_count) * self.MONTHLY_PER_SUPPORTER) + orphan_share,
+            }
+            for artist in artists
+        ]
+
+        context = {
+            'active_count': active_count,
+            'no_artist_count': no_artist_count,
+            'artist_count': artist_count,
+            'cmn_total': active_count * self.CMN_PER_SUBSCRIBER_YEAR,
+            'artist_total': active_count * self.ARTIST_PER_SUBSCRIBER_YEAR,
+            'orphan_share': orphan_share,
+            'artist_rows': artist_rows,
+        }
+        return render(request, self.template_name, context)
 
 
 class AdminGrantTemporaryAccessView(StaffRequiredMixin, View):

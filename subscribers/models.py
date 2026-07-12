@@ -22,6 +22,16 @@ class SubscriberProfile(models.Model):
     stripe_subscription_id = models.CharField(max_length=100, blank=True)
     subscription_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     current_period_end = models.DateTimeField(null=True, blank=True)
+    cancel_at_period_end = models.BooleanField(
+        default=False,
+        help_text='Whether Stripe is set to cancel this subscription at current_period_end '
+                  'instead of automatically renewing it.',
+    )
+    designated_artist = models.ForeignKey(
+        'accounts.ArtistProfile', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='supporters',
+        help_text='The artist who receives 90% of this subscriber\'s fee.',
+    )
     navidrome_user_id = models.CharField(max_length=100, blank=True)
     navidrome_access_error = models.BooleanField(default=False)
     library_access_granted = models.BooleanField(
@@ -32,9 +42,34 @@ class SubscriberProfile(models.Model):
     temporary_access_until = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Read straight from __dict__ (not the field descriptors) so that
+        # deferred/partial instances (e.g. built by the on_delete=SET_NULL
+        # cascade collector) don't trigger a refresh_from_db() here.
+        self._original_subscription_status = self.__dict__.get('subscription_status')
+        self._original_designated_artist_id = self.__dict__.get('designated_artist_id')
+
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        status_changed = not is_new and self.subscription_status != self._original_subscription_status
+        artist_changed = not is_new and self.designated_artist_id != self._original_designated_artist_id
+
+        super().save(*args, **kwargs)
+
+        if status_changed:
+            SubscriptionStatusChange.objects.create(subscriber=self, status=self.subscription_status)
+        if artist_changed:
+            ArtistDesignationChange.objects.create(subscriber=self, artist=self.designated_artist)
+
+        self._original_subscription_status = self.subscription_status
+        self._original_designated_artist_id = self.designated_artist_id
+
     @property
     def should_have_library_access(self):
         """Whether the subscriber's Stripe/temporary-access status entitles them to library access."""
+        if self.user.is_staff:
+            return True
         if self.subscription_status in (self.STATUS_ACTIVE, self.STATUS_ARTIST):
             return True
         if self.temporary_access_until and self.temporary_access_until > timezone.now():
@@ -51,3 +86,39 @@ class SubscriberProfile(models.Model):
     class Meta:
         verbose_name = 'Subscriber Profile'
         verbose_name_plural = 'Subscriber Profiles'
+
+
+class SubscriptionStatusChange(models.Model):
+    """A record of every subscription_status transition a subscriber has gone through."""
+
+    subscriber = models.ForeignKey(SubscriberProfile, on_delete=models.CASCADE, related_name='status_history')
+    status = models.CharField(max_length=20, choices=SubscriberProfile.STATUS_CHOICES)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.subscriber.user.email} -> {self.status} @ {self.changed_at}'
+
+    class Meta:
+        verbose_name = 'Subscription Status Change'
+        verbose_name_plural = 'Subscription Status Changes'
+        ordering = ['-changed_at']
+
+
+class ArtistDesignationChange(models.Model):
+    """A record of every designated-artist change a subscriber has made."""
+
+    subscriber = models.ForeignKey(SubscriberProfile, on_delete=models.CASCADE, related_name='artist_designation_history')
+    artist = models.ForeignKey(
+        'accounts.ArtistProfile', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='designation_changes',
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        artist_name = self.artist.display_name if self.artist else '(none)'
+        return f'{self.subscriber.user.email} -> {artist_name} @ {self.changed_at}'
+
+    class Meta:
+        verbose_name = 'Artist Designation Change'
+        verbose_name_plural = 'Artist Designation Changes'
+        ordering = ['-changed_at']

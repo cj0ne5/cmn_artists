@@ -20,6 +20,12 @@
 
   <hr>
 
+  <h2>support</h2>
+  <p>Supporters: <strong>{{ profile.supporter_count }}</strong></p>
+  <p>Estimated monthly supporter income: <strong>${{ profile.monthly_income }}</strong> <span class="muted">($3/month/supporter)</span></p>
+  <p>(Additional income will come from subscribers who have not elected to support any artist)</p>
+  <hr>
+
   <div style="display: flex; justify-content: space-between; align-items: baseline;">
     <h2>albums</h2>
     <a href="{% url 'album-create' %}" class="muted">+ add album</a>

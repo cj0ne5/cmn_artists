@@ -247,4 +247,6 @@ class DashboardView(LoginRequiredMixin, View):
                 'albums': albums,
                 'total_tracks': total_tracks,
             })
+        if request.user.is_staff:
+            return redirect('admin-money')
         return redirect('subscriber-dashboard')

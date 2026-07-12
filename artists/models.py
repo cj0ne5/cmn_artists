@@ -1,6 +1,10 @@
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+
+MONTHLY_INCOME_PER_SUPPORTER = Decimal('3.00')
 
 
 class ArtistProfile(models.Model):
@@ -26,6 +30,17 @@ class ArtistProfile(models.Model):
     @property
     def is_approved(self):
         return self.status == self.STATUS_APPROVED
+
+    @property
+    def supporter_count(self):
+        """Count of registered subscribers currently designating this artist for support."""
+        from subscribers.models import SubscriberProfile
+        return self.supporters.filter(subscription_status=SubscriberProfile.STATUS_ACTIVE).count()
+
+    @property
+    def monthly_income(self):
+        """Estimated monthly income at $3/supporter/month."""
+        return self.supporter_count * MONTHLY_INCOME_PER_SUPPORTER
 
     def save(self, *args, **kwargs):
         if self.display_name and not self.slug:
