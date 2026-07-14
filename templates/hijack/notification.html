@@ -1,0 +1,14 @@
+{% load i18n %}
+
+<div class="hijack-banner">
+  <span class="hijack-banner-message">
+    {% blocktrans trimmed with user=request.user %}
+      You are impersonating <strong>{{ user }}</strong>.
+    {% endblocktrans %}
+  </span>
+  <form action="{% url 'hijack:release' %}" method="POST" class="hijack-banner-actions">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}">
+    <button type="submit" class="hijack-banner-button">{% translate 'stop impersonating' %}</button>
+  </form>
+</div>

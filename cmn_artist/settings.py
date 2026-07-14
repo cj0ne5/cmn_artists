@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     'subscribers',
     'music',
     'django_extensions',
+    'hijack',
+    'hijack.contrib.admin',
 ]
 
 
@@ -46,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'hijack.middleware.HijackUserMiddleware',
 ]
 
 ROOT_URLCONF = 'cmn_artist.urls'
@@ -156,6 +159,14 @@ STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
 STRIPE_SUBSCRIPTION_PRICE_ID = config('STRIPE_SUBSCRIPTION_PRICE_ID', default='')
 
 ACCOUNT_ADAPTER = 'subscribers.adapter.NavidromeAccountAdapter'
+
+# django-hijack — lets staff log in as another user for live demos/support
+HIJACK_LOGIN_REDIRECT_URL = '/dashboard/'
+HIJACK_LOGOUT_REDIRECT_URL = '/admin/'
+# Matches the app's own StaffRequiredMixin: any staff member may hijack,
+# but not other staff/superusers.
+HIJACK_PERMISSION_CHECK = 'hijack.permissions.superusers_and_staff'
+HIJACK_INSERT_BEFORE = '<nav>'
 
 LOGGING = {
     'version': 1,

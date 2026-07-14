@@ -26,6 +26,17 @@
       {{ form.note.errors }}
     </div>
 
+    <h2>artist agreement</h2>
+    <p>Here's a bunch of details to make sure we're all on the same page. We'll
+      email you a copy 
+    <div class="agreement-scrollbox">{{ artist_agreement_text }}</div>
+
+    <div class="form-group form-group-checkbox">
+      {{ form.agree_to_terms }}
+      {{ form.agree_to_terms.label_tag }}
+      {{ form.agree_to_terms.errors }}
+    </div>
+
     <button type="submit">submit application</button>
   </form>
 </div>

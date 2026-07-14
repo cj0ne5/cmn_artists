@@ -18,6 +18,12 @@ class ArtistProfileForm(forms.ModelForm):
 
 
 class ArtistApplicationForm(forms.ModelForm):
+    agree_to_terms = forms.BooleanField(
+        required=True,
+        label='I have read and agree to the Artist Agreement',
+        error_messages={'required': 'You must agree to the Artist Agreement to submit your application.'},
+    )
+
     class Meta:
         model = ArtistProfile
         fields = ['display_name', 'note']

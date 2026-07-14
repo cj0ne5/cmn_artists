@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load hijack %}
 
 {% block title %}All Accounts — Capital Music Network{% endblock %}
 
@@ -19,6 +20,7 @@
         <th>temp access</th>
         <th>grant access</th>
         <th>re-sync</th>
+        <th>demo as</th>
       </tr>
     </thead>
     <tbody>
@@ -120,6 +122,19 @@
               <button type="submit" class="danger">revoke access</button>
             </form>
           </div>
+          {% endif %}
+        </td>
+
+        <td>
+          {% if request.user|can_hijack:profile.user %}
+          <form method="POST" action="{% url 'hijack:acquire' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_pk" value="{{ profile.user.pk }}">
+            <input type="hidden" name="next" value="{% url 'dashboard' %}">
+            <button type="submit">demo as</button>
+          </form>
+          {% else %}
+            <span class="muted">—</span>
           {% endif %}
         </td>
       </tr>

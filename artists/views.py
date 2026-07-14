@@ -10,6 +10,7 @@ from django.views import View
 from django.views.generic import ListView, TemplateView, UpdateView
 
 from artists.navidrome import grant_library_access
+from .agreement import get_artist_agreement_text
 from .forms import ArtistApplicationForm, ArtistProfileForm
 from .models import ArtistProfile
 
@@ -97,7 +98,10 @@ class ArtistApplicationView(LoginRequiredMixin, View):
     def get(self, request):
         profile = getattr(request.user, 'artist_profile', None)
         form = ArtistApplicationForm(instance=profile)
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {
+            'form': form,
+            'artist_agreement_text': get_artist_agreement_text(),
+        })
 
     def post(self, request):
         profile = getattr(request.user, 'artist_profile', None)
@@ -107,13 +111,16 @@ class ArtistApplicationView(LoginRequiredMixin, View):
             artist_profile.user = request.user
             artist_profile.status = ArtistProfile.STATUS_PENDING
             artist_profile.save()
-            messages.success(request, 
+            messages.success(request,
                              "Thanks for submitting your application! " \
                              "We will review and will send you an email once " \
                              "we've made a decision. If you need help in the " \
                              "meantime, you can reach out to " + settings.SUPPORT_EMAIL)
             return redirect('dashboard')
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {
+            'form': form,
+            'artist_agreement_text': get_artist_agreement_text(),
+        })
 
 
 class AdminApplicationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
@@ -176,7 +183,11 @@ class AdminApplicationApproveView(LoginRequiredMixin, UserPassesTestMixin, View)
                     f"Hi {artist_profile.display_name},\n\n"
                     f"Your application to submit music to Capital Music Network has been approved.\n\n"
                     f"Log in to get started: {request.build_absolute_uri('/dashboard/')}\n\n"
-                    f"— Capital Music Network"
+                    f"— Capital Music Network\n\n"
+                    f"{'=' * 60}\n"
+                    f"ARTIST AGREEMENT\n"
+                    f"{'=' * 60}\n\n"
+                    f"{get_artist_agreement_text()}"
                 ),
                 from_email=None,
                 recipient_list=[user.email],

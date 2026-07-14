@@ -21,6 +21,7 @@ def home_view(request):
 urlpatterns = [
     path('', home_view, name='home'),
     path('accounts/', include('allauth.urls')),
+    path('hijack/', include('hijack.urls')),
     path('profile/', include('artists.urls')),
     path('music/', include('music.urls')),
     path('subscribe/', include('subscribers.urls')),
