@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>Capital Music Network Terms of Service</h1>
+
+  <h2>The Basics</h2>
+  <p>
+    By creating an account and participating in Capital Music Network, you're agreeing to these terms. We've tried to keep them short and readable. If anything here doesn't make sense, reach out at support@capitalmusicnetwork.com and ask.
+  </p>
+
+  <h2>What you're signing up for</h2>
+  <p>
+  Capital Music Network Live includes two services: this application that lets you manage your account, and the music streaming platform at <a href="https://listen.capitalmusicnetwork.com">https://listen.capitalmusicnetwork.com</a>.
+  </p>
+
+  <p>
+  If you're an artist with Capital Music Network, this application also allows you to upload your own content. You're responsible for what you submit, as described in the artist agreement that you sign when you register as an artist.
+  </p>
+  
+  <p> All users are responsible for keeping your account and password secure.
+  </p>
+ 
+
+  <h2>Plans & Billing</h2>
+  <p>
+  Subscription plans are billed annually, and you can cancel at any time from your account settings. Cancellation stops future billing but does not end your current billing period early. See our <a href="{% url 'money-transparency' %}">money transparency page</a> for details on how your subscription is split between artists and Capital Music Network.
+  </p>
+  <p>
+  Because most of your subscription payment goes out to the artist you're supporting shortly after you sign up, we're unable to offer refunds.
+  </p>
+
+  <h2>Account Termination</h2>
+  <p>You can stop using this service and ask us to delete your data at any time (see our privacy policy for how). We may suspend or terminate accounts that abuse the service (attempting to break the app, circumvent download restrictions, etc).</p>
+
+  <h2>Sound Recordings For Streaming Only</h2>
+  <p>
+    The music streaming platform is presented to subscribers and contains music uploaded by artists who participate in Capital Music Network. The sound recordings remain the property of the artists. This music is made available for streaming only. Subscribers may not download or distribute this music outside of the platform. This music must never be shared with outside parties, uploaded to or used to train any Large Language Models.
+  </p> 
+
+  <h2>Changes</h2>
+  <p>We may update these terms as the product changes. If we make a change that meaningfully affects your rights, we'll let you know.</p>
+</div>
+{% endblock %}

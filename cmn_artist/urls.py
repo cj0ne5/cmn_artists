@@ -8,6 +8,9 @@ from artists.views import (
     AdminApplicationDeclineView,
     AdminApplicationListView,
     DashboardView,
+    MoneyTransparencyView,
+    TermsView,
+    PrivacyView,
     TutorialView,
 )
 from subscribers.views import AccountSettingsView, StripeWebhookView
@@ -29,6 +32,9 @@ urlpatterns = [
     path('admin-panel/applications/', AdminApplicationListView.as_view(), name='admin-application-list'),
     path('admin-panel/applications/<int:pk>/approve/', AdminApplicationApproveView.as_view(), name='admin-application-approve'),
     path('admin-panel/applications/<int:pk>/decline/', AdminApplicationDeclineView.as_view(), name='admin-application-decline'),
+    path('money-transparency/', MoneyTransparencyView.as_view(), name='money-transparency'),
+    path('terms/', TermsView.as_view(), name='terms'),
+    path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('tutorial/', TutorialView.as_view(), name='tutorial'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('account/', AccountSettingsView.as_view(), name='account-settings'),

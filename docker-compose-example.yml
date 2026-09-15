@@ -38,6 +38,40 @@ services:
     networks:
       - internal
 
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        IMAGE: python:3.11
+    entrypoint: ["python", "manage.py", "run_scheduler"]
+    environment:
+      DBHOST: postgres
+      DBUSER: admin
+      DBNAME: postgres
+      DBPASS: LocalPasswordOnly
+      DBPORT=5432
+      MEDIA_ROOT: /media
+      SECRET_KEY: changeme-set-in-production
+      EMAIL_HOST_USER: ""
+      EMAIL_HOST_PASSWORD: ""
+      DEFAULT_FROM_EMAIL: ""
+      CSRF_TRUSTED_ORIGINS: "https://artists.capitalmusicnetwork.com"
+      ALLOWED_HOSTS: "https://artists.capitalmusicnetwork.com"
+      NAVIDROME_BASE_URL: "https://listen.capitalmusicnetwork.com"
+      NAVIDROME_ADMIN_USER: admin
+      NAVIDROME_ADMIN_PASS: your-navidrome-admin-password
+      NAVIDROME_LIBRARY_ID=1
+      NAVIDROME_SAMPLE_LIBRARY_ID=2
+      SUPPORT_EMAIL=support@capitalmusicnetwork.com
+    volumes:
+      - ./media:/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
   postgres:
     image: postgres:latest
     restart: unless-stopped

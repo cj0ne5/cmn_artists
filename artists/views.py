@@ -261,3 +261,13 @@ class DashboardView(LoginRequiredMixin, View):
         if request.user.is_staff:
             return redirect('admin-money')
         return redirect('subscriber-dashboard')
+
+
+class TermsView(TemplateView):
+    template_name = 'artists/terms.html'
+
+class PrivacyView(TemplateView):
+    template_name = 'artists/privacy.html'
+
+class MoneyTransparencyView(TemplateView):
+    template_name = 'artists/money_transparency.html'

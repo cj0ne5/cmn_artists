@@ -413,7 +413,7 @@ class AdminGrantTemporaryAccessView(StaffRequiredMixin, View):
         messages.success(
             request,
             f'Temporary access granted to {profile.user.email} until {until.strftime("%b %d, %Y")}. '
-            f'Run revoke_expired_access hourly via cron to auto-expire.'
+            f'The scheduler will auto-expire it.'
         )
         return redirect('admin-user-list')
 

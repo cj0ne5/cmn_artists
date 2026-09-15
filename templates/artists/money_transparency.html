@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}How the Money Works — Capital Music Network{% endblock %}
+
+{% block content %}
+<div class="page">
+  <h1>how the money works</h1>
+
+  <h2>the 90/10 split</h2>
+  <p>
+    Subscribers pay $40/year ($3.33/month). Of that, artists receive 90% ($36/year, $3/month per
+    supporter) and CMN keeps 10% ($4/year) to run the co-op.
+  </p>
+  <p>
+    Stripe charges CMN a standard card-processing fee (about 2.9% + 30&cent;) on every subscriber
+    payment. <strong>CMN's 10% share absorbs that fee</strong> — it's never subtracted from an
+    artist's 90%. Artists always receive the full $36 per supporter they're credited for.
+  </p>
+  <p>
+    When a subscriber signs up without selecting an artist, their $36 is split among all artists who are signed up for the platform that month.
+  </p>
+
+  <hr>
+
+  <h2>when you get paid</h2>
+  <p>
+    Payouts are handled manually by CMN staff, and go out in two parts on two different
+    schedules, depending on whether a subscriber is attributed directly to you or pooled with
+    other artists:
+  </p>
+  <ul>
+    <li>
+      <strong>Attributed subscribers: paid monthly.</strong> As soon as a subscriber designates
+      you as their supported artist, your full $36/year share for that subscriber is paid out at the end of the
+      month in which they subscribe.
+    </li>
+    <li>
+      <strong>Undesignated (pooled) subscribers: paid annually.</strong> Your share of
+      subscribers who haven't designated an artist is calculated every month and tracked
+      throughout the year, but is only paid out once, at the end of the year.
+    </li>
+  </ul>
+</div>
+{% endblock %}
