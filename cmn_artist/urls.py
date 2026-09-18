@@ -43,5 +43,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Served by Django in production too: there's no reverse proxy in front of
+# gunicorn handling /media/ separately, so this is the only thing that serves
+# uploaded artist media (cover art, tracks) to the artists app.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
