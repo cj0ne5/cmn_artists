@@ -1,7 +1,7 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, re_path, include
 from django.conf import settings
-from django.conf.urls.static import static
+from django.views.static import serve as serve_static
 
 from artists.views import (
     AdminApplicationApproveView,
@@ -46,4 +46,11 @@ urlpatterns = [
 # Served by Django in production too: there's no reverse proxy in front of
 # gunicorn handling /media/ separately, so this is the only thing that serves
 # uploaded artist media (cover art, tracks) to the artists app.
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Not using django.conf.urls.static.static() here - it no-ops when DEBUG=False.
+urlpatterns += [
+    re_path(
+        r"^%s(?P<path>.*)$" % settings.MEDIA_URL.lstrip("/"),
+        serve_static,
+        {"document_root": settings.MEDIA_ROOT},
+    ),
+]
