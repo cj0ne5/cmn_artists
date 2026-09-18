@@ -7,12 +7,21 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+def _raise_for_status(resp: requests.Response) -> None:
+    """Like resp.raise_for_status(), but includes the response body so the
+    actual Navidrome error (e.g. duplicate username) shows up in logs."""
+    try:
+        resp.raise_for_status()
+    except requests.HTTPError as exc:
+        raise requests.HTTPError(f"{exc}: {resp.text}", response=resp) from exc
+
+
 def _admin_session(base_url: str, admin_user: str, admin_pass: str):
     """Authenticate as admin and return (session, token)."""
     session = requests.Session()
     resp = session.post(base_url.rstrip("/") + "/auth/login",
                         json={"username": admin_user, "password": admin_pass})
-    resp.raise_for_status()
+    _raise_for_status(resp)
     data = resp.json()
     token = data.get("token")
     if not token:
@@ -42,19 +51,26 @@ def create_navidrome_user(base_url: str, admin_user: str, admin_pass: str,
     Returns the Navidrome user ID. Raises on failure.
     """
     session = _admin_session(base_url, admin_user, admin_pass)
+    payload = {
+        "userName": username,
+        "name": display_name,
+        "email": email,
+        "password": password,
+        "isAdmin": False,
+    }
+    # Root logger level is WARNING (see settings.LOGGING), so use warning()
+    # here rather than info() so this actually reaches the container logs.
+    logger.warning(
+        "Creating Navidrome user: userName=%r name=%r email=%r",
+        username, display_name, email,
+    )
     resp = session.post(
         base_url.rstrip("/") + "/api/user",
-        json={
-            "userName": username,
-            "name": display_name,
-            "email": email,
-            "password": password,
-            "isAdmin": False,
-        },
+        json=payload,
         headers={"Content-Type": "application/json"},
     )
-    resp.raise_for_status()
-    print("new navidrome user created- their id is " + resp.json()["id"])
+    _raise_for_status(resp)
+    logger.warning("Navidrome user created: id=%s", resp.json()["id"])
     return resp.json()["id"]
 
 
@@ -67,7 +83,7 @@ def update_navidrome_password(base_url: str, admin_user: str, admin_pass: str,
         json={"password": new_password},
         headers={"Content-Type": "application/json"},
     )
-    resp.raise_for_status()
+    _raise_for_status(resp)
 
 
 def grant_library_access(base_url: str, admin_user: str, admin_pass: str,
@@ -82,7 +98,7 @@ def grant_library_access(base_url: str, admin_user: str, admin_pass: str,
         json={"libraryIds": library_ids},
         headers={"Content-Type": "application/json"},
     )
-    resp.raise_for_status()
+    _raise_for_status(resp)
 
 
 def revoke_library_access(base_url: str, admin_user: str, admin_pass: str,
@@ -95,4 +111,4 @@ def revoke_library_access(base_url: str, admin_user: str, admin_pass: str,
         json={"libraryIds": library_ids},
         headers={"Content-Type": "application/json"},
     )
-    resp.raise_for_status()
+    _raise_for_status(resp)
