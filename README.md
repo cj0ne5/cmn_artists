@@ -79,3 +79,7 @@ For development, I'm connecting to the production Navidrome instance (setting up
 ```
 
 From there, we can use any of Stripe's test credit cards to place fake payments: <https://docs.stripe.com/testing>
+
+## Backups
+
+Everything is backed up to Backblaze. See `backup/README.md` for more details.

@@ -1,0 +1,13 @@
+[Unit]
+Description=CMN Artist Portal backup (Postgres + media + Navidrome -> Backblaze B2)
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/docker-apps/cmn_artist/backup/backup.sh
+# Give large media libraries plenty of time to upload.
+TimeoutStartSec=6h
+
+[Install]
+WantedBy=multi-user.target
