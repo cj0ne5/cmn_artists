@@ -32,9 +32,12 @@ SMTP credentials with the run's log attached.
      Gmail app credentials as the app's own `.env`. Leave `NOTIFY_EMAIL` blank
      to skip notifications entirely.
 4. `chmod 600 backup.env` (contains secrets).
-5. Initialize the repository (one-time): `restic init` (with the env vars
-   from `backup.env` exported, or just run `env $(cat backup.env | xargs)
-   restic init`).
+5. Initialize the repository (one-time):
+   ```sh
+   set -a && source backup.env && set +a && restic init
+   ```
+   (`set -a` exports everything `source` sets, so restic sees the B2/repo
+   vars — same mechanism `backup.sh` itself uses.)
 6. Install the systemd units:
    ```sh
    sudo cp cmn-backup.service cmn-backup.timer /etc/systemd/system/
