@@ -52,6 +52,16 @@ notify() {
     local subject="$1"
     [[ -z "${NOTIFY_EMAIL:-}" || -z "${EMAIL_HOST_USER:-}" || -z "${EMAIL_HOST_PASSWORD:-}" ]] && return 0
 
+    # NOTIFY_EMAIL may be a single address or a comma-separated list.
+    local -a recipients=()
+    local addr
+    IFS=',' read -ra _raw_addrs <<< "$NOTIFY_EMAIL"
+    for addr in "${_raw_addrs[@]}"; do
+        addr="${addr// /}"
+        [[ -n "$addr" ]] && recipients+=("$addr")
+    done
+    [[ ${#recipients[@]} -eq 0 ]] && return 0
+
     local msg_file="$WORK_DIR/notify.eml"
     {
         printf 'From: %s\r\n' "${DEFAULT_FROM_EMAIL:-$EMAIL_HOST_USER}"
@@ -62,10 +72,15 @@ notify() {
         cat "$LOG_FILE"
     } > "$msg_file"
 
+    local -a rcpt_args=()
+    for addr in "${recipients[@]}"; do
+        rcpt_args+=(--mail-rcpt "$addr")
+    done
+
     curl --silent --show-error --ssl-reqd \
         --url "smtp://smtp.gmail.com:587" \
         --mail-from "$EMAIL_HOST_USER" \
-        --mail-rcpt "$NOTIFY_EMAIL" \
+        "${rcpt_args[@]}" \
         --user "$EMAIL_HOST_USER:$EMAIL_HOST_PASSWORD" \
         --upload-file "$msg_file" \
         || log "WARNING: failed to send notification email"
